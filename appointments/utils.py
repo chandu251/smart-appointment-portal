@@ -20,10 +20,14 @@ def send_appointment_email(appointment, event_type):
     subject = subject_map.get(event_type, "Appointment Status Update")
     recipient = appointment.email
     
-    # Simple tenant host resolving helper
-    # In a real app we'd get the actual domain name. We'll use a placeholder or config.
-    domain = "localhost:8000"
-    tracking_url = f"http://{domain}/t/{appointment.tenant.slug}/request/status/{appointment.tracking_uuid}/"
+    # Resolve tracking URL using configured SITE_URL
+    site_url = getattr(settings, 'SITE_URL', 'localhost:8000')
+    if not (site_url.startswith('http://') or site_url.startswith('https://')):
+        # Choose protocol based on DEBUG setting
+        protocol = 'http' if settings.DEBUG else 'https'
+        tracking_url = f"{protocol}://{site_url}/status/{appointment.tracking_uuid}/"
+    else:
+        tracking_url = f"{site_url.rstrip('/')}/status/{appointment.tracking_uuid}/"
     
     body = f"Hello {appointment.full_name},\n\n"
     
