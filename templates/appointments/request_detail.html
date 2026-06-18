@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}Request Details - {{ appointment.full_name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4 animate-fade-in">
+    <div class="col-md-10">
+        <div class="card p-4 rounded-4 shadow-sm border mb-4">
+            <div class="border-bottom pb-3 mb-4 d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <span class="badge bg-light text-dark border mb-2">Request ID: {{ appointment.id }}</span>
+                    <h2 class="fw-bold mb-1">Appointment Request Details</h2>
+                </div>
+                <a href="{% url 'appointments:ceo_dashboard' tenant_slug=tenant.slug %}" class="btn btn-outline-secondary btn-sm">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+                </a>
+            </div>
+
+            <div class="row g-4">
+                <!-- Left Column: Requester Information & Attachment -->
+                <div class="col-md-6 border-end">
+                    <h5 class="fw-bold text-indigo-accent mb-3" style="color: var(--indigo-accent);"><i class="fa-solid fa-user-tie me-2"></i>Requester Details</h5>
+                    
+                    <table class="table table-borderless table-sm small">
+                        <tr>
+                            <td class="text-muted fw-semibold" style="width: 130px;">Full Name:</td>
+                            <td class="fw-bold text-dark">{{ appointment.full_name }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-semibold">Employee ID:</td>
+                            <td>{{ appointment.employee_id|default:"N/A" }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-semibold">Designation:</td>
+                            <td>{{ appointment.designation }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-semibold">Department:</td>
+                            <td>{{ appointment.department }}</td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-semibold">Email:</td>
+                            <td><a href="mailto:{{ appointment.email }}">{{ appointment.email }}</a></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-semibold">Mobile:</td>
+                            <td>{{ appointment.mobile_number }}</td>
+                        </tr>
+                    </table>
+
+                    <h5 class="fw-bold text-indigo-accent mt-4 mb-3" style="color: var(--indigo-accent);"><i class="fa-solid fa-calendar me-2"></i>Preferred Scheduling</h5>
+                    
+                    <table class="table table-borderless table-sm small">
+                        <tr>
+                            <td class="text-muted fw-semibold" style="width: 130px;">Preferred Date:</td>
+                            <td><strong>{{ appointment.preferred_date }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-semibold">Preferred Time:</td>
+                            <td><strong>{{ appointment.preferred_time }}</strong></td>
+                        </tr>
+                        <tr>
+                            <td class="text-muted fw-semibold">Submitted Priority:</td>
+                            <td>
+                                {% if appointment.priority == 'low' %}
+                                    <span class="badge bg-secondary">Low</span>
+                                {% elif appointment.priority == 'medium' %}
+                                    <span class="badge bg-info">Medium</span>
+                                {% elif appointment.priority == 'high' %}
+                                    <span class="badge bg-warning">High</span>
+                                {% elif appointment.priority == 'urgent' %}
+                                    <span class="badge bg-danger">Urgent</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    </table>
+
+                    <div class="mt-4 p-3 bg-light rounded-3">
+                        <span class="text-muted small d-block fw-bold text-uppercase">Purpose:</span>
+                        <h6 class="fw-bold text-dark mt-1">{{ appointment.purpose }}</h6>
+                        <span class="text-muted small d-block fw-bold text-uppercase mt-3">Agenda Description:</span>
+                        <p class="small text-muted mb-0">{{ appointment.description }}</p>
+                    </div>
+
+                    {% if appointment.attachment %}
+                        <div class="mt-4 p-3 border border-dashed rounded-3 bg-white">
+                            <span class="text-muted small d-block fw-bold mb-2"><i class="fa-solid fa-paperclip me-1"></i>ATTACHMENT</span>
+                            <a href="{{ appointment.attachment.url }}" target="_blank" class="btn btn-outline-primary btn-sm">
+                                <i class="fa-solid fa-download me-1"></i> View/Download Document
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Right Column: AI Insights & CEO Action -->
+                <div class="col-md-6">
+                    <!-- AI Insight Card -->
+                    <div class="card p-3 border-info-subtle bg-info-subtle bg-opacity-10 mb-4 border-2" style="background: linear-gradient(180deg, #f0f9ff 0%, #e0f2fe 100%); border-color: #7dd3fc !important;">
+                        <h5 class="fw-bold text-sky-800 text-dark mb-3">
+                            <i class="fa-solid fa-wand-magic-sparkles me-2 text-info" style="color: var(--info-gradient);"></i>AI Analytics Insights
+                        </h5>
+                        
+                        <div class="row g-2 small mb-3">
+                            <div class="col-6">
+                                <span class="text-muted d-block small">Suggested Category</span>
+                                <span class="badge bg-light text-dark border py-1.5 px-2.5 fw-bold">{{ ai.suggested_category }}</span>
+                            </div>
+                            <div class="col-6">
+                                <span class="text-muted d-block small">AI Priority Suggestion</span>
+                                <span class="badge {% if ai.suggested_priority == 'urgent' %}bg-danger{% elif ai.suggested_priority == 'high' %}bg-warning text-dark{% else %}bg-secondary{% endif %} py-1.5 px-2.5 fw-bold">
+                                    {{ ai.suggested_priority|upper }}
+                                </span>
+                            </div>
+                        </div>
+
+                        {% if ai.is_duplicate %}
+                            <div class="alert alert-warning border-0 rounded-3 py-2 px-3 small mb-3">
+                                <i class="fa-solid fa-triangle-exclamation me-1"></i> 
+                                <strong>Duplicate Detected:</strong> This applicant already has {{ ai.duplicate_count }} other pending requests.
+                            </div>
+                        {% else %}
+                            <div class="alert alert-success border-0 rounded-3 py-2 px-3 small mb-3">
+                                <i class="fa-solid fa-circle-check me-1"></i> No duplicate pending requests detected.
+                            </div>
+                        {% endif %}
+
+                        <span class="text-muted small d-block fw-bold text-uppercase">AI Meeting Summary:</span>
+                        <p class="small text-dark italic mb-0 font-monospace" style="line-height: 1.4;">{{ ai.summary }}</p>
+                    </div>
+
+                    <!-- CEO Action Form -->
+                    <div class="card p-3 bg-white">
+                        <h5 class="fw-bold mb-3"><i class="fa-solid fa-pencil-square me-2 text-indigo-accent" style="color: var(--indigo-accent);"></i>Process Request</h5>
+                        
+                        <form method="POST" action="{% url 'appointments:ceo_action' tenant_slug=tenant.slug request_id=appointment.id %}">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label class="form-label small fw-semibold text-muted">Update Status</label>
+                                {{ form.status }}
+                            </div>
+                            
+                            <div class="row g-2 mb-3" id="schedule-fields">
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold text-muted">Scheduled Date</label>
+                                    {{ form.scheduled_date }}
+                                </div>
+                                <div class="col-6">
+                                    <label class="form-label small fw-semibold text-muted">Scheduled Time</label>
+                                    {{ form.scheduled_time }}
+                                </div>
+                            </div>
+                            
+                            <div class="mb-4">
+                                <label class="form-label small fw-semibold text-muted">CEO Remarks / Notes</label>
+                                {{ form.remarks }}
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 py-2.5 text-white shadow-sm">
+                                <i class="fa-solid fa-save me-1"></i> Save Action & Notify Visitor
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Dynamically show/hide scheduled date & time based on selected status
+    document.addEventListener("DOMContentLoaded", function() {
+        const statusSelect = document.getElementById("id_status");
+        const scheduleFields = document.getElementById("schedule-fields");
+        const dateInput = document.getElementById("id_scheduled_date");
+        const timeInput = document.getElementById("id_scheduled_time");
+
+        function toggleSchedule() {
+            if (statusSelect.value === "approved") {
+                scheduleFields.style.display = "flex";
+                dateInput.setAttribute("required", "true");
+                timeInput.setAttribute("required", "true");
+                // Pre-populate with preferred date/time if empty
+                if(!dateInput.value) dateInput.value = "{{ appointment.preferred_date|date:'Y-m-d' }}";
+                if(!timeInput.value) timeInput.value = "{{ appointment.preferred_time|time:'H:i' }}";
+            } else {
+                scheduleFields.style.display = "none";
+                dateInput.removeAttribute("required");
+                timeInput.removeAttribute("required");
+            }
+        }
+
+        statusSelect.addEventListener("change", toggleSchedule);
+        toggleSchedule(); // Run on load
+    });
+</script>
+{% endblock %}

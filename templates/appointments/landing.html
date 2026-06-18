@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ tenant.name }} - Appointment Portal{% endblock %}
+
+{% block content %}
+<div class="row align-items-center py-4 mb-5 animate-fade-in">
+    <div class="col-md-2 text-center text-md-start mb-3 mb-md-0">
+        {% if tenant.logo %}
+            <img src="{{ tenant.logo.url }}" alt="{{ tenant.name }} Logo" class="img-fluid rounded shadow-sm border p-2 bg-white" style="max-height: 120px;">
+        {% else %}
+            <div class="rounded-4 bg-indigo-accent text-white d-flex align-items-center justify-content-center mx-auto mx-md-0" style="width: 100px; height: 100px; background-color: var(--indigo-accent);">
+                <i class="fa-solid fa-building-columns fa-3x"></i>
+            </div>
+        {% endif %}
+    </div>
+    <div class="col-md-10 text-center text-md-start">
+        <h1 class="fw-bold mb-1">{{ tenant.name }}</h1>
+        <p class="text-muted mb-0">Official Appointment & Digital Queue Portal</p>
+        <span class="badge bg-light text-dark border mt-2 px-3 py-2 rounded-pill">
+            <i class="fa-solid fa-circle-check text-success me-1"></i> Active System
+        </span>
+    </div>
+</div>
+
+<div class="mb-5 animate-fade-in" style="animation-delay: 0.2s;">
+    <h3 class="fw-bold mb-4"><i class="fa-solid fa-users me-2 text-indigo-accent" style="color: var(--indigo-accent);"></i>Executives & CEOs</h3>
+    
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        {% for ceo in ceos %}
+            <div class="col">
+                <div class="card p-4 h-100">
+                    <div class="row align-items-center">
+                        <div class="col-sm-7 mb-3 mb-sm-0">
+                            <h4 class="fw-bold text-indigo-accent mb-1" style="color: var(--indigo-accent);">{{ ceo.user.get_full_name|default:ceo.user.username }}</h4>
+                            <h6 class="text-muted fw-semibold mb-2">{{ ceo.title }}</h6>
+                            <p class="small text-muted mb-3">
+                                <i class="fa-solid fa-sitemap me-1"></i> Department: {{ ceo.department|default:"General Administration" }}
+                            </p>
+                            
+                            <a href="{% url 'appointments:request_form' tenant_slug=tenant.slug ceo_id=ceo.id %}" class="btn btn-primary btn-sm px-4 py-2 text-white">
+                                <i class="fa-solid fa-calendar-plus me-1"></i> Request Appointment
+                            </a>
+                        </div>
+                        
+                        <div class="col-sm-5 text-center border-start">
+                            {% if ceo.qr_code %}
+                                <img src="{{ ceo.qr_code.url }}" alt="CEO QR Code" class="img-fluid border rounded p-1 mb-2 bg-white" style="max-height: 130px;">
+                                <div>
+                                    <a href="{{ ceo.qr_code.url }}" download class="text-indigo-accent small fw-bold text-decoration-none" style="color: var(--indigo-accent);">
+                                        <i class="fa-solid fa-download me-1"></i> Download QR
+                                    </a>
+                                </div>
+                            {% else %}
+                                <div class="text-muted small py-4">
+                                    <i class="fa-solid fa-qrcode fa-3x mb-2 text-warning"></i>
+                                    <p class="mb-0">QR Code not generated.</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="text-muted">
+                    <i class="fa-solid fa-circle-exclamation fa-4x mb-3 text-warning"></i>
+                    <h4>No Active Executive Profiles</h4>
+                    <p>Register as a CEO under this tenant or contact a Super Admin in Django Admin to link a CEO user profile to this organization.</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

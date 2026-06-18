@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block title %}My Requests - {{ tenant.name }}{% endblock %}
+
+{% block content %}
+<div class="row align-items-center justify-content-between mb-4 animate-fade-in">
+    <div class="col-md-7">
+        <h1 class="fw-bold mb-1">My Appointment History</h1>
+        <p class="text-muted mb-0">Track, view, and manage your submitted appointment requests under <strong>{{ tenant.name }}</strong></p>
+    </div>
+    <div class="col-md-5 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'appointments:landing' tenant_slug=tenant.slug %}" class="btn btn-primary text-white shadow-sm">
+            <i class="fa-solid fa-plus-circle me-1"></i> New Request
+        </a>
+    </div>
+</div>
+
+<div class="card p-3 animate-fade-in" style="animation-delay: 0.1s;">
+    <h5 class="fw-bold mb-3"><i class="fa-solid fa-clock-rotate-left me-2 text-indigo-accent" style="color: var(--indigo-accent);"></i>Submitted Requests</h5>
+    
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead class="table-light small">
+                <tr>
+                    <th>Executive</th>
+                    <th>Purpose</th>
+                    <th>Submitted On</th>
+                    <th>Preference Date</th>
+                    <th>Scheduled Slot</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="small">
+                {% for appt in appointments %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold text-dark">{{ appt.ceo.user.get_full_name }}</div>
+                            <div class="text-muted" style="font-size: 0.8rem;">{{ appt.ceo.title }} ({{ appt.ceo.department|default:"Administration" }})</div>
+                        </td>
+                        <td>
+                            <div class="fw-semibold">{{ appt.purpose }}</div>
+                            {% if appt.token_number %}
+                                <div class="text-success fw-bold" style="font-size: 0.75rem;">
+                                    <i class="fa-solid fa-ticket me-1"></i>Token: {{ appt.token_number }}
+                                </div>
+                            {% endif %}
+                        </td>
+                        <td>{{ appt.created_at|date:"Y-m-d H:i" }}</td>
+                        <td>
+                            <span><i class="fa-regular fa-calendar me-1"></i> {{ appt.preferred_date }}</span>
+                            <div class="text-muted small"><i class="fa-regular fa-clock me-1"></i> {{ appt.preferred_time }}</div>
+                        </td>
+                        <td>
+                            {% if appt.status == 'approved' and appt.scheduled_date %}
+                                <span class="text-success fw-bold"><i class="fa-regular fa-calendar-check me-1"></i> {{ appt.scheduled_date }}</span>
+                                <div class="text-success small fw-bold"><i class="fa-regular fa-clock me-1"></i> {{ appt.scheduled_time }}</div>
+                            {% else %}
+                                <span class="text-muted small">Not scheduled yet</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if appt.status == 'pending' %}
+                                <span class="badge bg-warning-subtle text-warning border border-warning-subtle px-2 py-1 rounded">Pending</span>
+                            {% elif appt.status == 'approved' %}
+                                <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1 rounded">Approved</span>
+                            {% elif appt.status == 'rejected' %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1 rounded">Rejected</span>
+                            {% elif appt.status == 'cancelled' %}
+                                <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1 rounded">Cancelled</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <a href="{% url 'appointments:request_status' tenant_slug=tenant.slug tracking_uuid=appt.tracking_uuid %}" class="btn btn-outline-primary btn-sm py-1">
+                                <i class="fa-solid fa-ticket me-1"></i> View Slip
+                            </a>
+                        </td>
+                    </tr>
+                {% empty %}
+                    <tr>
+                        <td colspan="7" class="text-center py-5 text-muted">
+                            <i class="fa-regular fa-folder-open fa-3x mb-2"></i>
+                            <p class="mb-0">You have not submitted any appointment requests yet.</p>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}CEO Dashboard - Manage Visits{% endblock %}
+
+{% block content %}
+<div class="row align-items-center justify-content-between mb-4 animate-fade-in">
+    <div class="col-md-8">
+        <h1 class="fw-bold mb-1">CEO Dashboard</h1>
+        <p class="text-muted mb-0">Review requests, read visitor problems, and accept or reject appointments.</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <span class="badge bg-light text-dark border p-2 px-3 rounded-pill">
+            <i class="fa-solid fa-user-tie text-primary me-1"></i> Logged in as CEO
+        </span>
+    </div>
+</div>
+
+<!-- Simple Metrics -->
+<div class="row g-3 mb-4 animate-fade-in" style="animation-delay: 0.1s;">
+    <div class="col-md-4">
+        <div class="card p-3 text-center border-start border-warning border-4">
+            <h6 class="text-muted text-uppercase small font-weight-bold mb-1">Awaiting Review</h6>
+            <h2 class="fw-extrabold mb-0 text-warning">{{ pending_count }}</h2>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3 text-center border-start border-success border-4">
+            <h6 class="text-muted text-uppercase small font-weight-bold mb-1">Accepted / Scheduled</h6>
+            <h2 class="fw-extrabold mb-0 text-success">{{ approved_count }}</h2>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card p-3 text-center border-start border-danger border-4">
+            <h6 class="text-muted text-uppercase small font-weight-bold mb-1">Declined</h6>
+            <h2 class="fw-extrabold mb-0 text-danger">{{ rejected_count }}</h2>
+        </div>
+    </div>
+</div>
+
+<!-- Requests List -->
+<div class="card p-4 animate-fade-in" style="animation-delay: 0.2s;">
+    <h4 class="fw-bold mb-4"><i class="fa-solid fa-list me-2 text-indigo-accent" style="color: var(--indigo-accent);"></i>Visitor Request List</h4>
+    
+    {% for appt in appointments %}
+        <div class="p-3 mb-4 border rounded-4 bg-light shadow-sm">
+            <div class="row g-3 align-items-start">
+                <div class="col-md-4">
+                    <h5 class="fw-bold text-dark mb-1">{{ appt.full_name }}</h5>
+                    <p class="small text-muted mb-1">
+                        <i class="fa-solid fa-envelope me-1"></i> {{ appt.email }} <br>
+                        <i class="fa-solid fa-phone me-1"></i> {{ appt.mobile_number }}
+                    </p>
+                    <p class="small mb-2">
+                        <span class="badge bg-primary-subtle text-primary border border-primary-subtle me-1">
+                            <i class="fa-solid fa-building me-1"></i>{{ appt.department|default:"—" }}
+                        </span>
+                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">
+                            <i class="fa-solid fa-id-badge me-1"></i>{{ appt.designation|default:"—" }}
+                        </span>
+                    </p>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% if appt.priority == 'urgent' %}
+                            <span class="badge bg-danger">Urgent</span>
+                        {% elif appt.priority == 'high' %}
+                            <span class="badge bg-warning text-dark">High</span>
+                        {% elif appt.priority == 'medium' %}
+                            <span class="badge bg-info">Medium</span>
+                        {% else %}
+                            <span class="badge bg-secondary">Low</span>
+                        {% endif %}
+                        
+                        {% if appt.status == 'pending' %}
+                            <span class="badge bg-warning-subtle text-warning border border-warning-subtle">Pending Review</span>
+                        {% elif appt.status == 'approved' %}
+                            <span class="badge bg-success-subtle text-success border border-success-subtle">Accepted ({{ appt.token_number }})</span>
+                        {% elif appt.status == 'rejected' %}
+                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Declined</span>
+                        {% else %}
+                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">Cancelled</span>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <div class="col-md-5">
+                    <span class="text-muted small fw-bold d-block text-uppercase">Meeting Subject:</span>
+                    <h6 class="fw-bold text-indigo-accent" style="color: var(--indigo-accent);">{{ appt.purpose }}</h6>
+                    
+                    <span class="text-muted small fw-bold d-block text-uppercase mt-2">Problem Description:</span>
+                    <p class="small text-dark mb-2 font-monospace" style="white-space: pre-line; background: #fff; p: 10px; border-radius: 8px; border: 1px solid #e2e8f0; padding: 10px;">{{ appt.description }}</p>
+                    
+                    <span class="small text-muted">
+                        <i class="fa-regular fa-clock me-1"></i> Proposed: {{ appt.preferred_date }} at {{ appt.preferred_time }}
+                    </span>
+                    {% if appt.attachment %}
+                        <div class="mt-2">
+                            <a href="{{ appt.attachment.url }}" target="_blank" class="small text-indigo-accent fw-bold text-decoration-none">
+                                <i class="fa-solid fa-paperclip me-1"></i> View Attached File
+                            </a>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <div class="col-md-3 border-start">
+                    {% if appt.status == 'pending' %}
+                        <form method="POST" action="{% url 'ceo_action' request_id=appt.id %}" class="d-flex flex-column gap-2">
+                            {% csrf_token %}
+                            <textarea name="remarks" class="form-control form-control-sm" rows="2" placeholder="Add remarks or notes..."></textarea>
+                            
+                            <div class="d-flex gap-2">
+                                <button type="submit" name="action" value="approve" class="btn btn-success btn-sm w-100 text-white">
+                                    <i class="fa-solid fa-check me-1"></i> Accept
+                                </button>
+                                <button type="submit" name="action" value="reject" class="btn btn-danger btn-sm w-100 text-white">
+                                    <i class="fa-solid fa-xmark me-1"></i> Reject
+                                </button>
+                            </div>
+                        </form>
+                    {% else %}
+                        <div class="p-2 bg-white rounded-3 border small">
+                            <span class="text-muted fw-bold d-block">DECISION REMARKS:</span>
+                            <p class="mb-0 text-muted italic">{{ appt.remarks|default:"No remarks added." }}</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <div class="text-center py-5 text-muted">
+            <i class="fa-regular fa-folder-open fa-4x mb-3"></i>
+            <h4>No Requests Yet</h4>
+            <p>Once visitors submit their problems on the home page, they will appear here.</p>
+        </div>
+    {% endfor %}
+</div>
+{% endblock %}

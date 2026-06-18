@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block title %}Track Appointment Status - {{ tenant.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Premium Ticket/Slip Styling */
+    .slip-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+    
+    .appointment-slip {
+        background: #fff;
+        border: 2px dashed #cbd5e1;
+        border-radius: 20px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .appointment-slip::before, .appointment-slip::after {
+        content: '';
+        position: absolute;
+        width: 30px;
+        height: 30px;
+        background: var(--bg-color);
+        border-radius: 50%;
+        top: 50%;
+        transform: translateY(-50%);
+        z-index: 10;
+    }
+    
+    .appointment-slip::before {
+        left: -15px;
+        border-right: 1px solid #cbd5e1;
+    }
+    
+    .appointment-slip::after {
+        right: -15px;
+        border-left: 1px solid #cbd5e1;
+    }
+
+    .slip-header {
+        border-bottom: 2px dashed #e2e8f0;
+        padding-bottom: 20px;
+    }
+
+    .slip-footer {
+        border-top: 2px dashed #e2e8f0;
+        padding-top: 20px;
+    }
+    
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        .navbar, footer, .btn-print, .btn-cancel, .alert {
+            display: none !important;
+        }
+        .slip-container, .slip-container * {
+            visibility: visible;
+        }
+        .slip-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+        }
+        .appointment-slip {
+            border: 2px solid #000 !important;
+            box-shadow: none !important;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="slip-container py-4 animate-fade-in">
+    <div class="text-center mb-4">
+        <h2 class="fw-bold mb-1">Appointment Slip</h2>
+        <p class="text-muted small">Tracking Code: {{ appointment.tracking_uuid }}</p>
+    </div>
+
+    <div class="appointment-slip card p-4 shadow-sm border-0">
+        <!-- Header -->
+        <div class="slip-header text-center mb-4">
+            <h4 class="fw-bold mb-1">{{ tenant.name }}</h4>
+            <p class="text-muted small mb-0">{{ tenant.address|default:"" }}</p>
+            <div class="mt-3">
+                {% if appointment.status == 'pending' %}
+                    <span class="badge-pending"><i class="fa-solid fa-hourglass-half me-1"></i> Pending Approval</span>
+                {% elif appointment.status == 'approved' %}
+                    <span class="badge-approved"><i class="fa-solid fa-circle-check me-1"></i> Approved</span>
+                {% elif appointment.status == 'rejected' %}
+                    <span class="badge-rejected"><i class="fa-solid fa-circle-xmark me-1"></i> Rejected</span>
+                {% elif appointment.status == 'cancelled' %}
+                    <span class="badge-cancelled"><i class="fa-solid fa-ban me-1"></i> Cancelled</span>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Body -->
+        <div class="row g-3 mb-4">
+            <div class="col-12 text-center py-2">
+                {% if appointment.status == 'approved' and appointment.token_number %}
+                    <p class="text-muted small mb-1">YOUR DIGITAL QUEUE TOKEN</p>
+                    <h1 class="display-5 fw-extrabold text-success mb-1" style="font-weight: 800; letter-spacing: -1px;">
+                        {{ appointment.token_number }}
+                    </h1>
+                    <span class="badge bg-light border text-dark fw-semibold small">
+                        Appt No: {{ appointment.appointment_number }}
+                    </span>
+                {% else %}
+                    <h5 class="text-muted">Queue slot will be generated upon approval</h5>
+                {% endif %}
+            </div>
+            
+            <hr class="text-muted">
+
+            <div class="col-6">
+                <span class="text-muted small d-block">EXECUTIVE</span>
+                <span class="fw-bold">{{ appointment.ceo.user.get_full_name }}</span>
+                <span class="d-block small text-muted">{{ appointment.ceo.title }}</span>
+            </div>
+            
+            <div class="col-6">
+                <span class="text-muted small d-block">APPLICANT</span>
+                <span class="fw-bold">{{ appointment.full_name }}</span>
+                <span class="d-block small text-muted">{{ appointment.designation }} ({{ appointment.department }})</span>
+            </div>
+
+            <div class="col-6 mt-3">
+                <span class="text-muted small d-block">SCHEDULED SLOT</span>
+                {% if appointment.status == 'approved' and appointment.scheduled_date %}
+                    <span class="fw-bold text-success"><i class="fa-regular fa-calendar-check me-1"></i> {{ appointment.scheduled_date }}</span>
+                    <span class="d-block small fw-bold text-success"><i class="fa-regular fa-clock me-1"></i> {{ appointment.scheduled_time }}</span>
+                {% else %}
+                    <span class="text-muted">Awaiting Schedule</span>
+                {% endif %}
+            </div>
+
+            <div class="col-6 mt-3">
+                <span class="text-muted small d-block">PREFERRED SLOT</span>
+                <span class="fw-semibold"><i class="fa-regular fa-calendar me-1"></i> {{ appointment.preferred_date }}</span>
+                <span class="d-block small text-muted"><i class="fa-regular fa-clock me-1"></i> {{ appointment.preferred_time }}</span>
+            </div>
+            
+            <div class="col-12 mt-3">
+                <span class="text-muted small d-block">PURPOSE</span>
+                <span class="fw-semibold">{{ appointment.purpose }}</span>
+            </div>
+
+            {% if appointment.remarks %}
+                <div class="col-12 mt-3 p-3 bg-light rounded-3 border">
+                    <span class="text-muted small d-block fw-bold text-uppercase">Executive Remarks:</span>
+                    <p class="mb-0 text-dark italic small">{{ appointment.remarks }}</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <div class="slip-footer text-center mt-2">
+            <p class="small text-muted mb-0">Scan QR Code or visit portal to verify this digital slip.</p>
+            <p class="small text-muted font-monospace mt-1" style="font-size: 0.75rem;">Created: {{ appointment.created_at|date:"Y-m-d H:i" }}</p>
+        </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="d-flex justify-content-between mt-4 px-2">
+        <button onclick="window.print();" class="btn btn-outline-primary btn-print px-4">
+            <i class="fa-solid fa-print me-1"></i> Print / Save PDF
+        </button>
+        
+        {% if appointment.status == 'pending' or appointment.status == 'approved' %}
+            <a href="{% url 'appointments:request_cancel' tenant_slug=tenant.slug tracking_uuid=appointment.tracking_uuid %}" 
+               class="btn btn-danger btn-cancel px-4"
+               onclick="return confirm('Are you sure you want to cancel this appointment request?');">
+                <i class="fa-solid fa-ban me-1"></i> Cancel Request
+            </a>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

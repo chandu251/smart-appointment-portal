@@ -1,0 +1,42 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    volumes:
+      - postgres_data:/var/lib/postgresql/data/
+    environment:
+      - POSTGRES_DB=ceo_appointments
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres_password_2026
+    expose:
+      - 5432
+
+  web:
+    build: .
+    command: >
+      sh -c "python manage.py collectstatic --noinput &&
+             python manage.py migrate &&
+             gunicorn --bind 0.0.0.0:8000 ceo_appointment_system.wsgi:application"
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+      - media_volume:/app/media
+    ports:
+      - "8000:8000"
+    environment:
+      - SECRET_KEY=prod-insecure-3248u923huiefn9238huierh823y
+      - DEBUG=True
+      - ALLOWED_HOSTS=*
+      - DB_NAME=ceo_appointments
+      - DB_USER=postgres
+      - DB_PASSWORD=postgres_password_2026
+      - DB_HOST=db
+      - DB_PORT=5432
+    depends_on:
+      - db
+
+volumes:
+  postgres_data:
+  static_volume:
+  media_volume:

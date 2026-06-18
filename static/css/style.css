@@ -1,0 +1,8 @@
+/* Custom style rules override or supplement Bootstrap 5 */
+.navbar-brand-toggler:focus {
+    box-shadow: none;
+}
+.btn:focus, .form-control:focus, .form-select:focus {
+    box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.15);
+    border-color: var(--indigo-accent);
+}

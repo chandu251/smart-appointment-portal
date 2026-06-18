@@ -1,0 +1,152 @@
+{% extends 'base.html' %}
+{% load custom_filters %}
+
+{% block title %}CEO Appointment Management System - SaaS Portal{% endblock %}
+
+
+{% block content %}
+<div class="row align-items-center justify-content-between mb-5 py-4 animate-fade-in">
+    <div class="col-lg-6 mb-4 mb-lg-0">
+        <h1 class="display-4 fw-extrabold mb-3" style="letter-spacing: -1.5px; font-weight: 800; line-height: 1.15;">
+            Manage CEO Appointments <br>
+            <span style="background: var(--primary-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Without the Crowds.</span>
+        </h1>
+        <p class="lead text-muted mb-4">
+            A secure SaaS-based digital queue system designed for Directors, Principals, Deans, and Corporate Executives. Eliminate waiting outside cabins, schedule digital slots, and manage visitor queues seamlessly.
+        </p>
+        <div class="d-flex flex-wrap gap-3">
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg shadow-sm">
+                <i class="fa-solid fa-building me-2"></i> Register Organization
+            </a>
+            <a href="#organizations" class="btn btn-outline-secondary btn-lg">
+                <i class="fa-solid fa-list-check me-2"></i> View Tenant Portals
+            </a>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="p-4 bg-white border rounded-4 shadow-sm text-center">
+            <div class="mb-4">
+                <i class="fa-solid fa-qrcode fa-5x text-indigo-accent" style="color: var(--indigo-accent);"></i>
+            </div>
+            <h3 class="fw-bold mb-2">QR Appointment System</h3>
+            <p class="text-muted small">
+                Every executive is assigned a unique QR code. Staff, visitors, and employees can scan it to instantly open the appointment submission page.
+            </p>
+            <hr class="my-4">
+            <span class="badge rounded-pill bg-light text-dark p-2 px-3 border">
+                <i class="fa-solid fa-shield-halved text-success me-1"></i> Data Isolated Multi-Tenant Architecture
+            </span>
+        </div>
+    </div>
+</div>
+
+<div id="organizations" class="py-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold mb-2">Registered Organizations & Tenant Portals</h2>
+        <p class="text-muted">Select your college, hospital, or corporate office below to submit or manage requests.</p>
+    </div>
+    
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        {% for tenant in tenants %}
+            <div class="col animate-fade-in" style="animation-delay: {{ forloop.counter0|add:1|multiply:0.1 }}s;">
+                <div class="card h-100 p-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="rounded-3 p-3 bg-light d-flex align-items-center justify-content-center" style="width: 60px; height: 60px;">
+                            {% if tenant.logo %}
+                                <img src="{{ tenant.logo.url }}" alt="{{ tenant.name }} Logo" class="img-fluid" style="max-height: 50px;">
+                            {% else %}
+                                <i class="fa-solid fa-building-columns fa-2x text-indigo-accent" style="color: var(--indigo-accent);"></i>
+                            {% endif %}
+                        </div>
+                        <span class="badge bg-light border text-dark text-capitalize px-3 py-2 rounded-pill small">
+                            {{ tenant.subscription_plan }} Plan
+                        </span>
+                    </div>
+                    
+                    <h4 class="fw-bold mb-2">{{ tenant.name }}</h4>
+                    <p class="text-muted small flex-grow-1">
+                        <i class="fa-solid fa-map-location-dot me-1"></i> {{ tenant.address|default:"Location info not specified." }}
+                    </p>
+                    
+                    <div class="mt-4 pt-3 border-top d-flex gap-2">
+                        <a href="{% url 'appointments:landing' tenant_slug=tenant.slug %}" class="btn btn-success btn-sm w-100 py-2">
+                            <i class="fa-solid fa-qrcode me-1"></i> QR Landing
+                        </a>
+                        {% if user.is_authenticated and user.tenant == tenant %}
+                            <a href="{% if user.role == 'ceo' %}{% url 'appointments:ceo_dashboard' tenant_slug=tenant.slug %}{% else %}{% url 'appointments:staff_dashboard' tenant_slug=tenant.slug %}{% endif %}" class="btn btn-outline-primary btn-sm w-100 py-2">
+                                <i class="fa-solid fa-chart-line me-1"></i> Portal
+                            </a>
+                        {% else %}
+                            <a href="{% url 'login' %}" class="btn btn-outline-primary btn-sm w-100 py-2">
+                                <i class="fa-solid fa-right-to-bracket me-1"></i> Login
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="text-muted mb-3">
+                    <i class="fa-solid fa-building-circle-exclamation fa-4x mb-3"></i>
+                    <h4>No Tenants Registered Yet</h4>
+                    <p>Log in as Django Super Admin (`/admin/`) to add organizations, or register one above.</p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="py-5 border-top mt-5">
+    <div class="text-center mb-5">
+        <h2 class="fw-bold mb-2">SaaS Subscription Plans</h2>
+        <p class="text-muted">Choose a plan that fits your organization's administrative demands.</p>
+    </div>
+    
+    <div class="row justify-content-center g-4">
+        <div class="col-md-4">
+            <div class="card p-4 text-center border-2 border-light h-100">
+                <h4 class="fw-bold mt-2">Free Plan</h4>
+                <h2 class="display-5 fw-extrabold my-3" style="font-weight: 800;">$0</h2>
+                <ul class="list-unstyled my-4 text-muted small lh-lg">
+                    <li><i class="fa-solid fa-circle-check text-success me-2"></i> 1 CEO / Executive</li>
+                    <li><i class="fa-solid fa-circle-check text-success me-2"></i> 100 Requests/Month</li>
+                    <li><i class="fa-solid fa-circle-check text-success me-2"></i> QR Code Integration</li>
+                    <li><i class="fa-solid fa-circle-check text-success me-2"></i> Core Queue System</li>
+                </ul>
+                <a href="{% url 'register' %}" class="btn btn-outline-primary mt-auto py-2">Get Started</a>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card p-4 text-center border-indigo-accent border-2 h-100 style-highlight" style="border-color: var(--indigo-accent) !important; background: linear-gradient(180deg, #ffffff 0%, #f5f7ff 100%);">
+                <div class="position-absolute top-0 start-50 translate-middle">
+                    <span class="badge bg-indigo-accent text-white px-3 py-2 rounded-pill small" style="background-color: var(--indigo-accent);">RECOMMENDED</span>
+                </div>
+                <h4 class="fw-bold mt-2">Professional</h4>
+                <h2 class="display-5 fw-extrabold my-3" style="font-weight: 800;">$49<span class="fs-6 text-muted">/mo</span></h2>
+                <ul class="list-unstyled my-4 text-muted small lh-lg">
+                    <li><i class="fa-solid fa-circle-check text-success me-2"></i> Multiple CEOs / Heads</li>
+                    <li><i class="fa-solid fa-circle-check text-success me-2"></i> Unlimited Requests</li>
+                    <li><i class="fa-solid fa-circle-check text-success me-2"></i> Reports & PDF/Excel Exports</li>
+                    <li><i class="fa-solid fa-circle-check text-success me-2"></i> Priority Queue Slots</li>
+                </ul>
+                <a href="{% url 'register' %}" class="btn btn-primary mt-auto py-2 text-white shadow-sm">Upgrade Now</a>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card p-4 text-center border-2 border-light h-100">
+                <h4 class="fw-bold mt-2">Enterprise</h4>
+                <h2 class="display-5 fw-extrabold my-3" style="font-weight: 800;">$99<span class="fs-6 text-muted">/mo</span></h2>
+                <ul class="list-unstyled my-4 text-muted small lh-lg">
+                    <li><i class="fa-solid fa-circle-check text-success me-2"></i> Full Custom Branding</li>
+                    <li><i class="fa-solid fa-circle-check text-success me-2"></i> Dedicated Server DB</li>
+                    <li><i class="fa-solid fa-circle-check text-success me-2"></i> AI-Powered Analytics</li>
+                    <li><i class="fa-solid fa-circle-check text-success me-2"></i> SMS & WhatsApp alerts</li>
+                </ul>
+                <a href="{% url 'register' %}" class="btn btn-outline-primary mt-auto py-2">Contact Sales</a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

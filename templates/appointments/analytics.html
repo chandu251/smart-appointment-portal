@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}Analytics & Reports - {{ tenant.name }}{% endblock %}
+
+{% block content %}
+<div class="row align-items-center justify-content-between mb-4 animate-fade-in">
+    <div class="col-md-8">
+        <h1 class="fw-bold mb-1">Reports & Analytical Insights</h1>
+        <p class="text-muted mb-0">Visual trends and metrics for <strong>{{ ceo.user.get_full_name }}</strong> ({{ ceo.title }})</p>
+    </div>
+    <div class="col-md-4 text-md-end mt-3 mt-md-0">
+        <a href="{% url 'appointments:ceo_dashboard' tenant_slug=tenant.slug %}" class="btn btn-outline-secondary btn-sm shadow-sm">
+            <i class="fa-solid fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+</div>
+
+<!-- Grid for Charts -->
+<div class="row g-4 animate-fade-in" style="animation-delay: 0.15s;">
+    <!-- 1. Monthly Appointment Trends (Line Chart) -->
+    <div class="col-md-8">
+        <div class="card p-3 h-100">
+            <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-chart-line text-primary me-2"></i>Monthly Appointment Volumes</h5>
+            <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="monthlyTrendChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. Status Distribution (Pie Chart) -->
+    <div class="col-md-4">
+        <div class="card p-3 h-100">
+            <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-chart-pie text-success me-2"></i>Status Breakdown</h5>
+            <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="statusChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. Department Wise Requests (Bar Chart) -->
+    <div class="col-md-6">
+        <div class="card p-3 h-100">
+            <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-chart-bar text-warning me-2"></i>Department-wise Demands</h5>
+            <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="deptChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 4. Priority Distribution (Bar Chart) -->
+    <div class="col-md-6">
+        <div class="card p-3 h-100">
+            <h5 class="fw-bold mb-3 text-dark"><i class="fa-solid fa-circle-exclamation text-danger me-2"></i>Priority Metrics</h5>
+            <div style="position: relative; height: 300px; width: 100%;">
+                <canvas id="priorityChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Include Chart.js from CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        // Shared Color Palette
+        const colors = {
+            purple: '#6366f1',
+            green: '#10b981',
+            red: '#ef4444',
+            yellow: '#f59e0b',
+            blue: '#0ea5e9',
+            grey: '#94a3b8'
+        };
+
+        // 1. Monthly Trends Line Chart
+        new Chart(document.getElementById('monthlyTrendChart'), {
+            type: 'line',
+            data: {
+                labels: {{ trend_labels|safe }},
+                datasets: [{
+                    label: 'Appointments Submitted',
+                    data: {{ trend_data|safe }},
+                    borderColor: colors.purple,
+                    backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+
+        // 2. Status Pie Chart
+        new Chart(document.getElementById('statusChart'), {
+            type: 'doughnut',
+            data: {
+                labels: {{ status_labels|safe }},
+                datasets: [{
+                    data: {{ status_data|safe }},
+                    backgroundColor: [colors.yellow, colors.green, colors.red, colors.grey]
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // 3. Department Bar Chart
+        new Chart(document.getElementById('deptChart'), {
+            type: 'bar',
+            data: {
+                labels: {{ dept_labels|safe }},
+                datasets: [{
+                    label: 'Request Count',
+                    data: {{ dept_data|safe }},
+                    backgroundColor: colors.blue,
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+
+        // 4. Priority Bar Chart
+        new Chart(document.getElementById('priorityChart'), {
+            type: 'bar',
+            data: {
+                labels: {{ priority_labels|safe }},
+                datasets: [{
+                    label: 'Requests',
+                    data: {{ priority_data|safe }},
+                    backgroundColor: [colors.grey, colors.blue, colors.yellow, colors.red],
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { stepSize: 1 } }
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

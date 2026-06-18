@@ -1,0 +1,85 @@
+{% extends 'base.html' %}
+
+{% block title %}Track Request Status - CEO Office{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4 animate-fade-in">
+    <div class="col-md-6">
+        <div class="card p-4 rounded-4 shadow-sm border">
+            <div class="text-center mb-4 border-bottom pb-3">
+                <i class="fa-solid fa-receipt fa-3x text-indigo-accent" style="color: var(--indigo-accent);"></i>
+                <h3 class="fw-bold mt-2">Request Status</h3>
+                <p class="text-muted small mb-0">Tracking Code: {{ appointment.tracking_uuid }}</p>
+            </div>
+            
+            <div class="mb-4 text-center">
+                {% if appointment.status == 'pending' %}
+                    <div class="alert alert-warning py-3 rounded-4 border-0">
+                        <i class="fa-solid fa-hourglass-half fa-2x mb-2 d-block"></i>
+                        <span class="fw-bold fs-5">Awaiting CEO Review</span>
+                        <p class="small mb-0 mt-1">The CEO has not reviewed your request yet. We will notify you once a decision is made.</p>
+                    </div>
+                {% elif appointment.status == 'approved' %}
+                    <div class="alert alert-success py-3 rounded-4 border-0">
+                        <i class="fa-solid fa-circle-check fa-2x mb-2 d-block"></i>
+                        <span class="fw-bold fs-5">Request APPROVED</span>
+                        <p class="small mb-0 mt-1">Your appointment request has been accepted.</p>
+                        
+                        <div class="mt-3 bg-white p-3 rounded-3 border text-dark font-monospace">
+                            <span class="small text-muted d-block">YOUR QUEUE TOKEN</span>
+                            <span class="fs-2 fw-bold text-success">{{ appointment.token_number }}</span>
+                        </div>
+                    </div>
+                {% elif appointment.status == 'rejected' %}
+                    <div class="alert alert-danger py-3 rounded-4 border-0">
+                        <i class="fa-solid fa-circle-xmark fa-2x mb-2 d-block"></i>
+                        <span class="fw-bold fs-5">Request DECLINED</span>
+                        <p class="small mb-0 mt-1">The CEO has declined this appointment request.</p>
+                    </div>
+                {% elif appointment.status == 'cancelled' %}
+                    <div class="alert alert-secondary py-3 rounded-4 border-0">
+                        <i class="fa-solid fa-ban fa-2x mb-2 d-block"></i>
+                        <span class="fw-bold fs-5">Request CANCELLED</span>
+                        <p class="small mb-0 mt-1">You have cancelled this request.</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="row g-2 small border-top pt-3">
+                <div class="col-6 text-muted">Visitor Name:</div>
+                <div class="col-6 fw-bold text-end">{{ appointment.full_name }}</div>
+                
+                <div class="col-6 text-muted">Subject / Purpose:</div>
+                <div class="col-6 fw-bold text-end">{{ appointment.purpose }}</div>
+                
+                <div class="col-6 text-muted">Proposed Date:</div>
+                <div class="col-6 fw-bold text-end">{{ appointment.preferred_date }}</div>
+                
+                <div class="col-6 text-muted">Proposed Time:</div>
+                <div class="col-6 fw-bold text-end">{{ appointment.preferred_time }}</div>
+                
+                {% if appointment.remarks %}
+                    <div class="col-12 mt-3 p-3 bg-light rounded-3 border">
+                        <span class="fw-bold text-muted small d-block">CEO REMARKS:</span>
+                        <p class="mb-0 text-dark font-italic">{{ appointment.remarks }}</p>
+                    </div>
+                {% endif %}
+            </div>
+            
+            <div class="d-flex gap-2 mt-4 pt-3 border-top">
+                <a href="{% url 'home' %}" class="btn btn-outline-secondary btn-sm w-100">
+                    <i class="fa-solid fa-home me-1"></i> New Request
+                </a>
+                
+                {% if appointment.status == 'pending' %}
+                    <a href="{% url 'request_cancel' tracking_uuid=appointment.tracking_uuid %}" 
+                       class="btn btn-danger btn-sm w-100"
+                       onclick="return confirm('Are you sure you want to cancel this request?');">
+                        <i class="fa-solid fa-ban me-1"></i> Cancel Request
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

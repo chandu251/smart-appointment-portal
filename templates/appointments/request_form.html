@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Request Appointment with {{ ceo.user.get_full_name }} - {{ tenant.name }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4 animate-fade-in">
+    <div class="col-md-10">
+        <div class="card p-4 rounded-4 shadow-sm border">
+            <div class="border-bottom pb-3 mb-4 d-flex justify-content-between align-items-center flex-wrap">
+                <div>
+                    <h2 class="fw-bold mb-1">Appointment Request Form</h2>
+                    <p class="text-muted mb-0">Submitting request to: <strong class="text-indigo-accent" style="color: var(--indigo-accent);">{{ ceo.user.get_full_name }}</strong> ({{ ceo.title }} - {{ ceo.department }})</p>
+                </div>
+                <a href="{% url 'appointments:landing' tenant_slug=tenant.slug %}" class="btn btn-outline-secondary btn-sm mt-2 mt-md-0">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back
+                </a>
+            </div>
+
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger border-0 rounded-3 small mb-4">
+                        {{ form.non_field_errors.0 }}
+                    </div>
+                {% endif %}
+
+                <div class="row g-4">
+                    <!-- Section 1: Applicant Information -->
+                    <div class="col-12 mb-2">
+                        <h5 class="fw-bold text-indigo-accent mb-0" style="color: var(--indigo-accent);"><i class="fa-solid fa-user-tie me-2"></i>Requester Information</h5>
+                        <hr class="mt-2 text-muted">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Full Name <span class="text-danger">*</span></label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}
+                            <div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Employee / Faculty ID <span class="text-muted">(Optional)</span></label>
+                        {{ form.employee_id }}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Designation <span class="text-danger">*</span></label>
+                        {{ form.designation }}
+                        {% if form.designation.errors %}
+                            <div class="text-danger small mt-1">{{ form.designation.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Department <span class="text-danger">*</span></label>
+                        {{ form.department }}
+                        {% if form.department.errors %}
+                            <div class="text-danger small mt-1">{{ form.department.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                        {{ form.email }}
+                        {% if form.email.errors %}
+                            <div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Mobile Number <span class="text-danger">*</span></label>
+                        {{ form.mobile_number }}
+                        {% if form.mobile_number.errors %}
+                            <div class="text-danger small mt-1">{{ form.mobile_number.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Section 2: Appointment Information -->
+                    <div class="col-12 mt-5 mb-2">
+                        <h5 class="fw-bold text-indigo-accent mb-0" style="color: var(--indigo-accent);"><i class="fa-solid fa-circle-info me-2"></i>Appointment Details</h5>
+                        <hr class="mt-2 text-muted">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Preferred Date <span class="text-danger">*</span></label>
+                        {{ form.preferred_date }}
+                        {% if form.preferred_date.errors %}
+                            <div class="text-danger small mt-1">{{ form.preferred_date.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Preferred Time <span class="text-danger">*</span></label>
+                        {{ form.preferred_time }}
+                        {% if form.preferred_time.errors %}
+                            <div class="text-danger small mt-1">{{ form.preferred_time.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-9">
+                        <label class="form-label fw-semibold">Purpose of Meeting <span class="text-danger">*</span></label>
+                        {{ form.purpose }}
+                        {% if form.purpose.errors %}
+                            <div class="text-danger small mt-1">{{ form.purpose.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-md-3">
+                        <label class="form-label fw-semibold">Priority Level <span class="text-danger">*</span></label>
+                        {{ form.priority }}
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Brief Agenda / Description <span class="text-danger">*</span></label>
+                        {{ form.description }}
+                        {% if form.description.errors %}
+                            <div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Supporting Attachment <span class="text-muted">(Optional - PDF, Docs, Images)</span></label>
+                        {{ form.attachment }}
+                        {% if form.attachment.errors %}
+                            <div class="text-danger small mt-1">{{ form.attachment.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="mt-5 border-top pt-4 text-end">
+                    <button type="submit" class="btn btn-primary btn-lg px-5 text-white shadow-sm">
+                        <i class="fa-solid fa-paper-plane me-2"></i> Submit Appointment Request
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+
+{% block title %}Submit Appointment Request - CEO Office{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center py-4 animate-fade-in">
+    <div class="col-md-8">
+        <div class="card p-4 rounded-4 shadow-sm border">
+            <div class="text-center mb-4 border-bottom pb-3">
+                <i class="fa-solid fa-calendar-plus fa-3x text-indigo-accent" style="color: var(--indigo-accent);"></i>
+                <h2 class="fw-bold mt-2">Request an Appointment</h2>
+                <p class="text-muted small mb-0">Fill in the form below to submit your problem directly to the CEO's office</p>
+            </div>
+            
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                    <div class="alert alert-danger border-0 rounded-3 small mb-4">
+                        {{ form.non_field_errors.0 }}
+                    </div>
+                {% endif %}
+                
+                <div class="row g-3">
+                    <!-- Full Name -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Your Full Name <span class="text-danger">*</span></label>
+                        {{ form.full_name }}
+                        {% if form.full_name.errors %}<div class="text-danger small mt-1">{{ form.full_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    
+                    <!-- Email -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Email Address <span class="text-danger">*</span></label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                    </div>
+                    
+                    <!-- Mobile -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Mobile Number <span class="text-danger">*</span></label>
+                        {{ form.mobile_number }}
+                        {% if form.mobile_number.errors %}<div class="text-danger small mt-1">{{ form.mobile_number.errors.0 }}</div>{% endif %}
+                    </div>
+
+                    <!-- Priority -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Priority Level</label>
+                        {{ form.priority }}
+                    </div>
+
+                    <!-- Department dropdown -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Department <span class="text-danger">*</span></label>
+                        {{ form.department }}
+                        <!-- "Others" text input - shown via JS -->
+                        {{ form.department_other }}
+                        {% if form.department_other.errors %}
+                            <div class="text-danger small mt-1">{{ form.department_other.errors.0 }}</div>
+                        {% endif %}
+                        {% if form.department.errors %}
+                            <div class="text-danger small mt-1">{{ form.department.errors.0 }}</div>
+                        {% endif %}
+                    </div>
+
+                    <!-- Designation -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Designation <span class="text-muted small">(Optional)</span></label>
+                        {{ form.designation }}
+                        {% if form.designation.errors %}<div class="text-danger small mt-1">{{ form.designation.errors.0 }}</div>{% endif %}
+                    </div>
+                    
+                    <!-- Preferred Date -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Preferred Meeting Date <span class="text-danger">*</span></label>
+                        {{ form.preferred_date }}
+                        {% if form.preferred_date.errors %}<div class="text-danger small mt-1">{{ form.preferred_date.errors.0 }}</div>{% endif %}
+                    </div>
+                    
+                    <!-- Preferred Time -->
+                    <div class="col-md-6">
+                        <label class="form-label fw-semibold">Preferred Meeting Time <span class="text-danger">*</span></label>
+                        {{ form.preferred_time }}
+                        {% if form.preferred_time.errors %}<div class="text-danger small mt-1">{{ form.preferred_time.errors.0 }}</div>{% endif %}
+                    </div>
+                    
+                    <!-- Purpose -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Subject / Purpose of Meeting <span class="text-danger">*</span></label>
+                        {{ form.purpose }}
+                        {% if form.purpose.errors %}<div class="text-danger small mt-1">{{ form.purpose.errors.0 }}</div>{% endif %}
+                    </div>
+                    
+                    <!-- Description -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Tell us your Problem / Describe in Detail <span class="text-danger">*</span></label>
+                        {{ form.description }}
+                        {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors.0 }}</div>{% endif %}
+                    </div>
+                    
+                    <!-- Attachment -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold">Attachment <span class="text-muted">(Optional - PDF, Word Doc, or Image)</span></label>
+                        {{ form.attachment }}
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 py-3 text-white mt-4 fs-6">
+                    <i class="fa-solid fa-paper-plane me-2"></i> Submit Request to CEO
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Show/hide the "Others" text input based on department dropdown selection
+    const deptSelect = document.getElementById('id_department');
+    const deptOther = document.getElementById('id_department_other');
+
+    function toggleOtherField() {
+        if (deptSelect.value === 'Others') {
+            deptOther.style.display = 'block';
+            deptOther.required = true;
+        } else {
+            deptOther.style.display = 'none';
+            deptOther.required = false;
+            deptOther.value = '';
+        }
+    }
+
+    // Run on page load (in case form was submitted with errors and "Others" was selected)
+    toggleOtherField();
+    deptSelect.addEventListener('change', toggleOtherField);
+</script>
+{% endblock %}

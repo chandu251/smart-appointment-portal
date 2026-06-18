@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}CEO Appointment System{% endblock %}</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    
+    <!-- Custom CSS Design Tokens -->
+    <style>
+        :root {
+            --primary-gradient: linear-gradient(135deg, #4f46e5 0%, #3730a3 100%);
+            --success-gradient: linear-gradient(135deg, #10b981 0%, #047857 100%);
+            --danger-gradient: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            --warning-gradient: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            --info-gradient: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+            
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #64748b;
+            --border-color: #e2e8f0;
+            --indigo-accent: #6366f1;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Navbar Styling */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 15px 0;
+            z-index: 1000;
+        }
+        
+        .navbar-brand {
+            font-weight: 800;
+            font-size: 1.4rem;
+            letter-spacing: -0.5px;
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Main Content wrapper */
+        .main-content {
+            flex: 1;
+            padding-top: 30px;
+            padding-bottom: 50px;
+        }
+
+        /* Card Custom Styling */
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.08), 0 8px 10px -6px rgb(0 0 0 / 0.08);
+        }
+
+        /* Buttons Custom */
+        .btn {
+            border-radius: 10px;
+            font-weight: 600;
+            padding: 10px 20px;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .btn-primary {
+            background: var(--primary-gradient);
+            border: none;
+        }
+
+        .btn-success {
+            background: var(--success-gradient);
+            border: none;
+        }
+
+        .btn-danger {
+            background: var(--danger-gradient);
+            border: none;
+        }
+        
+        .btn-warning {
+            background: var(--warning-gradient);
+            border: none;
+            color: #fff;
+        }
+
+        .btn-info {
+            background: var(--info-gradient);
+            border: none;
+            color: #fff;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #0f172a;
+            color: #94a3b8;
+            padding: 30px 0;
+            margin-top: auto;
+            border-top: 1px solid #1e293b;
+        }
+
+        /* Interactive status badges */
+        .badge-pending {
+            background-color: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fde68a;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+
+        .badge-approved {
+            background-color: #d1fae5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+
+        .badge-rejected {
+            background-color: #fee2e2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+        
+        .badge-cancelled {
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #cbd5e1;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-weight: 600;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <!-- Header Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fa-solid fa-calendar-check me-2"></i>
+                {% if active_tenant %}
+                    {{ active_tenant.name }}
+                {% else %}
+                    Hi CEO
+                {% endif %}
+            </a>
+            <button class="navbar-brand-toggler navbar-toggler border-0" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center">
+                    {% if user.is_authenticated %}
+                        {% if user.role == 'ceo' %}
+                            <li class="nav-item">
+                                <a class="btn btn-outline-primary btn-sm me-2" href="{% url 'ceo_dashboard' %}">
+                                    <i class="fa-solid fa-chart-line me-1"></i> CEO Dashboard
+                                </a>
+                            </li>
+                        {% endif %}
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-dark fw-bold" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fa-solid fa-circle-user me-1"></i> {{ user.first_name|default:user.username }}
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end border-0 shadow-sm mt-2">
+                                <li><span class="dropdown-item-text text-muted small">Logged in as: {{ user.get_role_display }}</span></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fa-solid fa-right-from-bracket me-1"></i> Logout</a></li>
+                            </ul>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link text-dark fw-medium me-3" href="{% url 'login' %}">Sign In</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="btn btn-primary btn-sm text-white px-3" href="{% url 'register' %}">Create Account</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Body -->
+    <div class="main-content">
+        <div class="container">
+            <!-- Alert Messages -->
+            {% if messages %}
+                <div class="row justify-content-center">
+                    <div class="col-md-10">
+                        {% for message in messages %}
+                            <div class="alert alert-{% if message.tags == 'error' %}danger{% elif message.tags %}{{ message.tags }}{% else %}info{% endif %} alert-dismissible fade show border-0 rounded-4 shadow-sm mb-4" role="alert">
+                                <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check{% elif message.tags == 'error' %}fa-circle-exclamation{% else %}fa-circle-info{% endif %} me-2"></i>
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <div class="container text-center">
+            <p class="mb-2">&copy; 2026 CEO Appointment Management System (SaaS-Based).</p>
+            <p class="small text-muted mb-0">Designed to eliminate waiting and digitalize queues for Principals, Directors, and Executives.</p>
+        </div>
+    </footer>
+
+    <!-- Bootstrap 5 JavaScript Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Auto-refresh CSRF token from cookie before every form submission -->
+    <!-- This permanently prevents "CSRF verification failed" errors app-wide -->
+    <script>
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        // Before any form is submitted, inject the latest CSRF token from the cookie
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('form[method="post"], form[method="POST"]').forEach(function (form) {
+                form.addEventListener('submit', function () {
+                    const freshToken = getCookie('csrftoken');
+                    if (freshToken) {
+                        let input = form.querySelector('input[name="csrfmiddlewaretoken"]');
+                        if (input) {
+                            input.value = freshToken;
+                        } else {
+                            // If no hidden input exists, create one
+                            const newInput = document.createElement('input');
+                            newInput.type = 'hidden';
+                            newInput.name = 'csrfmiddlewaretoken';
+                            newInput.value = freshToken;
+                            form.prepend(newInput);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
