@@ -19,6 +19,20 @@ DEBUG = os.environ.get('DEBUG', 'True') == 'True'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
+# Trust Railway.app, Render.com, and localhost origins for CSRF
+# Add your specific deployed URL in the CSRF_TRUSTED_ORIGINS env variable on Railway
+_csrf_origins = os.environ.get('CSRF_TRUSTED_ORIGINS', '')
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.railway.app',
+    'https://*.up.railway.app',
+    'https://*.render.com',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000',
+]
+if _csrf_origins:
+    CSRF_TRUSTED_ORIGINS += [o.strip() for o in _csrf_origins.split(',') if o.strip()]
+
+
 # Application definition
 
 INSTALLED_APPS = [
