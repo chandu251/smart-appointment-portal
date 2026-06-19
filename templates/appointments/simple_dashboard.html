@@ -120,6 +120,14 @@
                             <span class="text-muted fw-bold d-block">DECISION REMARKS:</span>
                             <p class="mb-0 text-muted italic">{{ appt.remarks|default:"No remarks added." }}</p>
                         </div>
+                        {% if appt.status == 'approved' or appt.status == 'rejected' %}
+                            <form method="POST" action="{% url 'ceo_delete_request' request_id=appt.id %}" class="mt-2" onsubmit="return confirm('Are you sure you want to delete this request? This action cannot be undone.');">
+                                {% csrf_token %}
+                                <button type="submit" class="btn btn-outline-danger btn-sm w-100">
+                                    <i class="fa-solid fa-trash me-1"></i> Delete Request
+                                </button>
+                            </form>
+                        {% endif %}
                     {% endif %}
                 </div>
             </div>

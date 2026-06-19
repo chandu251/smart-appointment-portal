@@ -158,3 +158,116 @@ class SaaSAppointmentTestCase(TestCase):
         self.assertEqual(ai_insights['suggested_priority'], "urgent")
         self.assertEqual(ai_insights['suggested_category'], "HR / Leave Request")
         self.assertFalse(ai_insights['is_duplicate'])
+
+    def test_ceo_delete_approved_request(self):
+        """CEO can delete approved appointment requests."""
+        from django.urls import reverse
+        req = AppointmentRequest.objects.create(
+            tenant=self.tenant_anits,
+            ceo=self.ceo_profile_anits,
+            full_name="Delete Approved",
+            designation="Lecturer",
+            department="IT",
+            email="approved@anits.edu",
+            mobile_number="5551113333",
+            preferred_date=timezone.now().date(),
+            preferred_time=timezone.now().time(),
+            purpose="Meeting",
+            description="Discuss meeting details.",
+            status="approved"
+        )
+        
+        self.client.login(username="ceo_anits", password="password123")
+        url = reverse('ceo_delete_request', kwargs={'request_id': req.id})
+        response = self.client.post(url)
+        
+        self.assertRedirects(response, reverse('ceo_dashboard'))
+        self.assertFalse(AppointmentRequest.objects.filter(id=req.id).exists())
+
+    def test_ceo_delete_rejected_request(self):
+        """CEO can delete rejected appointment requests."""
+        from django.urls import reverse
+        req = AppointmentRequest.objects.create(
+            tenant=self.tenant_anits,
+            ceo=self.ceo_profile_anits,
+            full_name="Delete Rejected",
+            designation="Lecturer",
+            department="IT",
+            email="rejected@anits.edu",
+            mobile_number="5551113333",
+            preferred_date=timezone.now().date(),
+            preferred_time=timezone.now().time(),
+            purpose="Meeting",
+            description="Discuss meeting details.",
+            status="rejected"
+        )
+        
+        self.client.login(username="ceo_anits", password="password123")
+        url = reverse('ceo_delete_request', kwargs={'request_id': req.id})
+        response = self.client.post(url)
+        
+        self.assertRedirects(response, reverse('ceo_dashboard'))
+        self.assertFalse(AppointmentRequest.objects.filter(id=req.id).exists())
+
+    def test_ceo_cannot_delete_pending_request(self):
+        """CEO cannot delete pending appointment requests."""
+        from django.urls import reverse
+        req = AppointmentRequest.objects.create(
+            tenant=self.tenant_anits,
+            ceo=self.ceo_profile_anits,
+            full_name="Delete Pending",
+            designation="Lecturer",
+            department="IT",
+            email="pending@anits.edu",
+            mobile_number="5551113333",
+            preferred_date=timezone.now().date(),
+            preferred_time=timezone.now().time(),
+            purpose="Meeting",
+            description="Discuss meeting details.",
+            status="pending"
+        )
+        
+        self.client.login(username="ceo_anits", password="password123")
+        url = reverse('ceo_delete_request', kwargs={'request_id': req.id})
+        response = self.client.post(url)
+        
+        self.assertRedirects(response, reverse('ceo_dashboard'))
+        self.assertTrue(AppointmentRequest.objects.filter(id=req.id).exists())
+
+    def test_unauthorized_user_cannot_delete_request(self):
+        """Non-CEO users cannot delete appointment requests."""
+        from django.urls import reverse
+        req = AppointmentRequest.objects.create(
+            tenant=self.tenant_anits,
+            ceo=self.ceo_profile_anits,
+            full_name="Delete Unauthorized",
+            designation="Lecturer",
+            department="IT",
+            email="unauth@anits.edu",
+            mobile_number="5551113333",
+            preferred_date=timezone.now().date(),
+            preferred_time=timezone.now().time(),
+            purpose="Meeting",
+            description="Discuss meeting details.",
+            status="approved"
+        )
+        
+        # Test 1: Anonymous user redirect
+        url = reverse('ceo_delete_request', kwargs={'request_id': req.id})
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 302)
+        self.assertIn('login', response.url)
+        
+        # Test 2: Regular user raises 403
+        regular_user = User.objects.create_user(
+            username="regular_staff",
+            email="staff@anits.edu",
+            password="password123",
+            role="staff",
+            tenant=self.tenant_anits
+        )
+        self.client.login(username="regular_staff", password="password123")
+        response = self.client.post(url)
+        self.assertEqual(response.status_code, 403)
+        self.assertTrue(AppointmentRequest.objects.filter(id=req.id).exists())
+

@@ -163,3 +163,24 @@ def simple_ceo_action(request, request_id):
         messages.warning(request, "Appointment request has been declined.")
         
     return redirect('ceo_dashboard')
+
+
+@login_required
+@require_POST
+def simple_ceo_delete_request(request, request_id):
+    """
+    Deletes an appointment request. Only accepted (approved) or rejected requests can be deleted.
+    """
+    if request.user.role != 'ceo' and not request.user.is_superuser:
+        raise PermissionDenied("Access Denied: Only CEO can delete requests.")
+        
+    appointment = get_object_or_404(AppointmentRequest, id=request_id)
+    
+    if appointment.status in ['approved', 'rejected']:
+        appointment.delete()
+        messages.success(request, "Appointment request has been deleted successfully.")
+    else:
+        messages.error(request, "Only accepted or rejected requests can be deleted.")
+        
+    return redirect('ceo_dashboard')
+

@@ -13,6 +13,7 @@ urlpatterns = [
     path('', app_views.public_request_submit, name='home'),
     path('dashboard/', app_views.simple_ceo_dashboard, name='ceo_dashboard'),
     path('dashboard/action/<int:request_id>/', app_views.simple_ceo_action, name='ceo_action'),
+    path('dashboard/delete/<int:request_id>/', app_views.simple_ceo_delete_request, name='ceo_delete_request'),
     path('status/<uuid:tracking_uuid>/', app_views.simple_request_status, name='request_status'),
     path('status/<uuid:tracking_uuid>/cancel/', app_views.simple_request_cancel, name='request_cancel'),
     
